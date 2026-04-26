@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Новый пост{% endblock %}
+{% block content %}
+<h2>Создать новый пост</h2>
+<form method="POST" class="mt-3">
+    <div class="mb-3">
+        <label for="title" class="form-label">Заголовок</label>
+        <input type="text" class="form-control" id="title" name="title" required placeholder="Например: Как я изучаю Flask">
+    </div>
+    <div class="mb-3">
+        <label for="tags" class="form-label">Теги (через запятую)</label>
+        <input type="text" class="form-control" id="tags" name="tags" placeholder="python, flask, обучение">
+    </div>
+    <div class="mb-3">
+        <label for="content" class="form-label">Текст поста (Markdown)</label>
+        <textarea class="form-control" id="content" name="content" rows="10" required placeholder="# Привет&#10;&#10;Пишите текст здесь..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">📤 Опубликовать</button>
+    <a href="/" class="btn btn-secondary ms-2">Отмена</a>
+</form>
+{% endblock %}
