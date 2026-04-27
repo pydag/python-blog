@@ -119,21 +119,22 @@ def migrate_files_to_db():
 migrate_files_to_db()
 
 # --- 5. Работа с данными ---
-def load_posts():
-    """Загружает посты из БД и собирает уникальные теги."""
+
+def load_posts(page=1, per_page=10, tag_filter=None, search_query=None):
     conn = get_db()
     try:
         posts = conn.execute("SELECT * FROM posts ORDER BY created_at DESC").fetchall()
     finally:
         conn.close()
 
+    # Собираем все теги для сайдбара
     all_tags = set()
     posts_list = []
+
     for p in posts:
         tag_list = [t.strip() for t in p["tags"].split(",") if t.strip()] if p["tags"] else []
         all_tags.update(tag_list)
 
-        # Парсим дату из SQLite для RSS
         try:
             post_date = datetime.strptime(p["created_at"], "%Y-%m-%d %H:%M:%S")
         except ValueError:
@@ -148,30 +149,59 @@ def load_posts():
             "tags": tag_list,
             "date": post_date
         })
-    return posts_list, sorted(all_tags)
+
+    # Фильтрация по тегу
+    if tag_filter:
+        posts_list = [p for p in posts_list if tag_filter in p["tags"]]
+
+    # Фильтрация по поисковому запросу
+    if search_query:
+        q = search_query.lower()
+        posts_list = [p for p in posts_list if q in p["title"].lower() or q in p["content"].lower()]
+
+    # Логика пагинации
+    total = len(posts_list)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_items = posts_list[start:end]
+    total_pages = (total + per_page - 1) // per_page  # Округление вверх
+
+    return {
+        "posts": paginated_items,
+        "tags": sorted(all_tags),
+        "page": page,
+        "per_page": per_page,
+        "total": total,
+        "pages": total_pages,
+        "has_prev": page > 1,
+        "has_next": page < total_pages
+    }
 
 # --- 6. Маршруты ---
 @app.route("/")
 def index():
-    posts, tags = load_posts()
-    return render_template("index.html", posts=posts, tags=tags)
+
+    page = request.args.get('page', 1, type=int)
+    pagination = load_posts(page=page, per_page=10)
+    return render_template("index.html", pagination=pagination)
 
 @app.route("/tag/<tag_name>")
 def tag_view(tag_name):
-    posts, tags = load_posts()
-    filtered = [p for p in posts if tag_name in p["tags"]]
-    return render_template("index.html", posts=filtered, tags=tags, active_tag=tag_name)
+
+    page = request.args.get('page', 1, type=int)
+    pagination = load_posts(page=page, per_page=10, tag_filter=tag_name)
+    return render_template("index.html", pagination=pagination, active_tag=tag_name)
 
 @app.route("/search")
 def search():
+
     query = request.args.get("q", "").strip()
     if not query:
         return redirect(url_for("index"))
 
-    posts, tags = load_posts()
-    query_lower = query.lower()
-    filtered = [p for p in posts if query_lower in p["title"].lower() or query_lower in p["content"].lower()]
-    return render_template("index.html", posts=filtered, query=query, tags=tags)
+    page = request.args.get('page', 1, type=int)
+    pagination = load_posts(page=page, per_page=10, search_query=query)
+    return render_template("index.html", pagination=pagination, query=query)
 
 @app.route("/post/<slug>")
 def view_post(slug):
@@ -261,7 +291,12 @@ def delete_post(slug):
 
 @app.route("/feed")
 def feed():
-    posts, _ = load_posts()
+    # posts, _ = load_posts()
+    conn = get_db()
+    try:
+        posts_raw = conn.execute("SELECT * FROM posts ORDER BY created_at DESC LIMIT 20").fetchall()
+    finally:
+        conn.close()
     site_url = request.url_root.rstrip('/')
     xml = render_template("feed.xml",
                           posts=posts,
