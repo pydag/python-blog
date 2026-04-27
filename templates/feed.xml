@@ -11,10 +11,10 @@
     {% for post in posts[:10] %}
     <item>
       <title>{{ post.title }}</title>
-      <link>{{ site_url }}/post/{{ post.url_filename}}</link>
+      <link>{{ site_url }}/post/{{ post.slug}}</link>
       <description><![CDATA[{{ post.preview }}]]></description>
       <pubDate>{{ formatdate(post.date.timestamp(), usegmt=True) }}</pubDate>
-      <guid isPermaLink="true">{{ site_url }}/post/{{ post.url_filename }}</guid>
+      <guid isPermaLink="true">{{ site_url }}/post/{{ post.slug }}</guid>
     </item>
     {% endfor %}
   </channel>

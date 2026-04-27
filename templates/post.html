@@ -3,6 +3,14 @@
 {% block content %}
 <a href="/" class="btn btn-outline-secondary mb-3">Назад к списку</a>
 <h1>{{ title }}</h1>
+{% if session.logged_in %}
+<div class="mb-3 d-flex gap-2">
+  <a href="/post/{{ slug }}/edit" class="btn btn-sm btn-outline-primary">✏️ Редактировать</a>
+  <form action="/post/{{ slug }}/delete" method="POST" class="d-inline">
+    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить этот пост?')">🗑️ Удалить</button>
+  </form>
+</div>
+{% endif %}
 <div class="mt-3">
   {{ content|safe }} <!-- |safe разрешает вывод html из  markdown -->
 </div>

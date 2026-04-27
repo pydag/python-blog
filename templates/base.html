@@ -8,11 +8,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
-  <nav class="navbar navbar-dark bg-dark md-4">
-    <div class="container">
-      <a class="navbar-brand" href="/">Python-блог</a>
-      <a href="/create" class="btn btn-outline-light btn-sm">Новый пост</a>
-    </div>
+  <nav class="navbar navbar-dark bg-dark mb-4">
+      <div class="container">
+          <a class="navbar-brand" href="/">🐍 Python-блог</a>
+
+          <div class="d-flex align-items-center gap-2">
+              <form action="/search" method="GET" class="d-flex" role="search">
+                  <input class="form-control me-2 form-control-sm" type="search"
+                         placeholder="Поиск..." name="q" value="{{ query or '' }}"
+                         aria-label="Search" style="max-width: 180px;">
+                  <button class="btn btn-outline-light btn-sm" type="submit">🔍</button>
+              </form>
+
+              {% if session.logged_in %}
+                  <a href="/create" class="btn btn-outline-light btn-sm">➕ Новый пост</a>
+                  <a href="/logout" class="btn btn-outline-danger btn-sm">🚪 Выйти</a>
+              {% else %}
+                  <a href="/login" class="btn btn-outline-light btn-sm">🔐 Войти</a>
+              {% endif %}
+          </div>
+      </div>
   </nav>
   <div class="container">
     {% block content %}{% endblock %}
