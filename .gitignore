@@ -1,6 +1,16 @@
+# Секреты и БД
+.env
+#*.db
+*.sqlite3
+
+# Python кэш и окружение
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
+
 .idea/
 .vscode/
 *.log

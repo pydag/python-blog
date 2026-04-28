@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Ошибка сервера{% endblock %}
+{% block content %}
+<div class="text-center mt-5 py-5">
+    <h1 class="display-1 fw-bold text-danger">500</h1>
+    <p class="lead">Что-то пошло не так на нашей стороне. Мы уже разбираемся!</p>
+    <a href="/" class="btn btn-primary mt-3">🏠 Вернуться на главную</a>
+    <p class="text-muted mt-3">
+        <small>Если ошибка повторяется, напишите мне в
+        <a href="mailto:wellfixed@mail.ru">почту</a> или создайте
+        <a href="https://github.com/pydag/python-blog/issues">issue на GitHub</a></small>
+    </p>
+</div>
+{% endblock %}

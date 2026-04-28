@@ -12,6 +12,8 @@ from markupsafe import Markup, escape
 import markdown
 from pathlib import Path
 import frontmatter
+from dotenv import load_dotenv
+import os
 
 # --- 1. Конфигурация БД ---
 DB_NAME = "blog.db"
@@ -41,14 +43,30 @@ def init_db():
         conn.close()
 
 # --- 2. Настройка Flask ---
+
+# Загружаем переменные из .env (только для локальной разработки)
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+app.secret_key = os.getenv("SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("❌ Не задан SECRET_KEY! Проверьте файл .env или настройки хостинга.")
 
-ADMIN_USERNAME = os.environ.get("ADMIN_USER", "admin")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASS", "python123")  # ⚠️ Смените перед деплоем!
+ADMIN_USERNAME = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASS")
+if not ADMIN_PASSWORD:
+    raise RuntimeError("❌ Не задан ADMIN_PASS! Проверьте файл .env")
 
-POSTS_DIR = Path("posts")
-POSTS_DIR.mkdir(exist_ok=True)
+# Включаем/выключаем debug через переменную окружения
+app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+#app = Flask(__name__)
+# app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
+#
+# ADMIN_USERNAME = os.environ.get("ADMIN_USER", "admin")
+# ADMIN_PASSWORD = os.environ.get("ADMIN_PASS", "python123")  # ⚠️ Смените перед деплоем!
+
+# POSTS_DIR = Path("posts")
+# POSTS_DIR.mkdir(exist_ok=True)
 
 # --- 3. Утилиты и декораторы ---
 def login_required(f):
@@ -323,5 +341,17 @@ def logout():
     session.pop("logged_in", None)
     return redirect(url_for("index"))
 
+# --- Обработчики ошибок ---
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    app.logger.error(f"🚨 Server Error: {e}")
+    return render_template("500.html"), 500
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=app.config["DEBUG"])

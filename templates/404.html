@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена{% endblock %}
+{% block content %}
+<div class="text-center mt-5 py-5">
+    <h1 class="display-1 fw-bold">404</h1>
+    <p class="lead text-muted">Страница, которую вы ищете, не существует или была удалена.</p>
+    <a href="/" class="btn btn-primary mt-3">🏠 Вернуться на главную</a>
+    <form action="/search" method="GET" class="mt-4 mx-auto" style="max-width: 400px;">
+        <div class="input-group">
+            <input type="text" class="form-control" name="q" placeholder="Попробуйте найти через поиск...">
+            <button class="btn btn-outline-secondary" type="submit">🔍</button>
+        </div>
+    </form>
+</div>
+{% endblock %}\
